@@ -39,10 +39,8 @@ def main():
     changed_files = os.environ.get("changed_files", "").split(",")
     if (
         changed_files == [""]
-        or WORKFLOW_FILEPATH
-        in changed_files  # if the workflow file has been modified, we want to run the script on all rules
-        or SCRIPT_FILEPATH
-        in changed_files  # if the script has been modified, we want to run it on all rules
+        or WORKFLOW_FILEPATH in changed_files  # if the workflow file has been modified, we want to run the script on all rules
+        or SCRIPT_FILEPATH in changed_files  # if the script has been modified, we want to run it on all rules
     ):
         changed_files = []
         print("[-] No changed files found, run on all files.")
@@ -53,15 +51,13 @@ def main():
         vpatch_collection = yaml.load(f, Loader=SafeLoader)
 
     vpatch_collection_rules = vpatch_collection["appsec-rules"]
-    missing_rules = []
+    missing_rules: list[str] = []
 
     hub_appsecrules_path = os.path.join(args.hub, "appsec-rules")
     for r, d, f in os.walk(hub_appsecrules_path):
         for file in f:
             if file.endswith((".yaml", ".yml")):
-                if len(changed_files) == 0 or (
-                    len(changed_files) > 0 and file_in_pathlist(file, changed_files)
-                ):
+                if len(changed_files) == 0 or (len(changed_files) > 0 and file_in_pathlist(file, changed_files)):
                     if not file.startswith("vpatch-"):
                         continue
 

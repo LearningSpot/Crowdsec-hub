@@ -229,16 +229,15 @@ def main():
     hub_appsecrules_path = os.path.join(args.hub, "appsec-rules")
     ignore_list = []
 
+    print(f"Ignoring: {args.ignore}")
     with contextlib.suppress(FileNotFoundError), Path(args.ignore).open() as f:
         ignore_list = f.read().split("\n")
 
-    errors = {}
+    errors: dict[str, list[str]] = {}
     scenarios_taxonomy = {}
     filepath_list = []
 
-    for r, d, f in chain.from_iterable(
-        os.walk(path) for path in [hub_scenarios_path, hub_appsecrules_path]
-    ):
+    for r, d, f in chain.from_iterable(os.walk(path) for path in [hub_scenarios_path, hub_appsecrules_path]):
         for file in f:
             if file.endswith((".yaml", ".yml")):
                 filepath_list.append(os.path.join(r, file))
@@ -256,7 +255,7 @@ def main():
                 continue
 
             cpt += 1
-            scenario_errors = []
+            scenario_errors: list[str] = []
             if "labels" not in scenario:
                 scenario_errors.append("`labels` not found")
                 errors[scenario["name"]] = scenario_errors
@@ -322,7 +321,7 @@ def main():
                 if desc.startswith("detect "):
                     desc = desc.replace("detect ", "")
                 desc_words = desc.split(" ")
-                tmp = []
+                tmp: list[str] = []
                 for w in desc_words:
                     if len(w) <= 3:
                         w = w.upper()
@@ -377,9 +376,9 @@ def main():
     if len(errors) > 0:
         with Path(args.errors).open("w") as f:
             f.write(INTRO_STR)
-            for scenario, errors in errors.items():
+            for scenario, errorlist in errors.items():
                 f.write(f"**{scenario}**:\n")
-                for error in errors:
+                for error in errorlist:
                     f.write(f"  - {error}\n")
                 f.write("\n")
             f.write(HELP_STR)
@@ -407,7 +406,7 @@ def main():
             "Technique Name",
         ]
 
-        rows = []
+        rows: list[list[str]] = []
         for tactic, tactic_info in mitres.items():
             ta_info = lookup_tactic(tactic, mitre_data)
             if len(ta_info) == 0:
